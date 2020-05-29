@@ -1,0 +1,45 @@
+body {
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+.container {
+  background-color: rgb(235, 236, 240);
+  display: flex;
+  flex-direction: column;
+  opacity: inherit;
+  padding: 16px 16px 0px;
+  border: 8px none;
+  transition: background-color 0.2s ease 0s, opacity 0.1s ease 0s;
+  user-select: none;
+  width: 250px;
+}
+
+.box {
+  border-radius: 2px;
+  border: 2px solid transparent;
+  background-color: rgb(255, 255, 255);
+  box-shadow: none;
+  box-sizing: border-box;
+  padding: 8px;
+  width: 250px;
+  min-height: 40px;
+  margin-bottom: 8px;
+  user-select: none;
+  color: rgb(9, 30, 66);
+  display: flex;
+  cursor: grab;
+  transition: all 200ms cubic-bezier(0, 0, 0.2, 1);
+  box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
+}
+
+.box.touched {
+  cursor: grabbing;
+}
+
+.box:active {
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
