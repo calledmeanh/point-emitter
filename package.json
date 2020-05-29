@@ -5,7 +5,10 @@
   "scripts": {
     "build:dev": "webpack --mode development",
     "build:prod": "webpack --mode production",
-    "start": "webpack-dev-server"
+    "start": "webpack-dev-server",
+    "push:master": "git push origin master",
+    "push:issue": "",
+    "push:feature": ""
   },
   "devDependencies": {
     "@babel/core": "^7.10.1",
