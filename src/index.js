@@ -48,7 +48,6 @@ class DragWithStyle {
         const stayEl = e.target;
         const draggedElPos = draggedEl.getBoundingClientRect();
         const stayElPos = stayEl.getBoundingClientRect();
-        stayEl.style.transform = `translate3d(${originLeft}px, -${draggedElPos.height + 8}px, 0)`;
       }
 
       function mouseleave() {
@@ -63,9 +62,6 @@ class DragWithStyle {
       function mouseup(e) {
         child.classList.remove("touched");
         child.style.transform = `translate3d(${originLeft}px, ${originTop}px, 0)`;
-        if (i === 0) {
-          child.style.transform = `translate3d(${originLeft}px, ${172}px, 0)`;
-        }
         document.removeEventListener("mousemove", mousemove);
         document.removeEventListener("mouseup", mouseup);
         document.removeEventListener("mouseover", mouseover);
