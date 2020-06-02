@@ -16,78 +16,70 @@ class DragWithStyle {
     return childrens;
   }
 
-  addAttr(el, id) {
-    if (!el.hasAttribute("draggable")) {
-      el.setAttribute("draggable", true);
-      el.setAttribute("data-id", id);
-    }
-    return el;
-  }
+  attachChildrenEvent(childrens) {
+    const container = this.getContainer();
+    childrens.forEach(function (child) {
+      child.addEventListener("mousedown", function (e) {
+        document.addEventListener("mousemove", mousemove);
+        document.addEventListener("mouseover", mouseover);
+        document.addEventListener("mouseup", mouseup);
+        /* clean these codes */
+        child.classList.add("touched");
+        const box = child.getBoundingClientRect();
+        child.style.position = "fixed";
+        child.style.top = box.top + "px";
+        child.style.left = box.left + "px";
+        child.style.width = box.width + "px";
+        child.style.height = box.height + "px";
+        child.style.zIndex = "5000";
+        child.style.pointEvents = "none";
 
-  makeChildrenDraggable(elements) {
-    const draggableEl = elements.map((el, index) => this.addAttr(el, index));
-    return draggableEl;
-  }
+        const placeholderDiv = document.createElement("div");
+        placeholderDiv.style.width = child.style.width;
+        placeholderDiv.style.height = box.height + "px";
+        placeholderDiv.classList.add("placeholder");
+        placeholderDiv.textContent = child.textContent;
+        container.insertBefore(placeholderDiv, child);
+        /* clean these codes */
 
-  onChildrenDragging(draggableEls) {
-    draggableEls.forEach((el) => {
-      el.addEventListener("dragstart", function (e) {
-        el.classList.add("dragging");
-      });
-      el.addEventListener("dragend", function (e) {
-        el.classList.remove("dragging");
-        e.target.classList.remove("over");
-      });
-    });
-  }
+        /* clean these codes */
+        function mousemove(e) {
+          child.hidden = false;
+          let x = e.pageX - box.left - box.width / 2;
+          let y = e.pageY - box.top - box.height / 2;
+          child.style.transform = `translate3d(${x}px,${y}px,0)`;
+          child.hidden = true;
+        }
+        /* clean these codes */
 
-  onContainerDragging(container) {
-    container.addEventListener("dragover", function (e) {
-      e.preventDefault();
-      const afterElement = getDragAfterElement(container, e.pageY);
-      const draggingEl = document.querySelector(".dragging");
-      if (afterElement) {
-        // afterElement.animate(
-        //   [
-        //     // keyframes
-        //     { transform: "translateY(0px)" },
-        //     { transform: `translateY(-172px)` },
-        //   ],
-        //   {
-        //     // timing options
-        //     duration: 300,
-        //   }
-        // );
-        container.insertBefore(draggingEl, afterElement);
-      } else {
-        container.appendChild(draggingEl);
-      }
-    });
-
-    function getDragAfterElement(container, y) {
-      const draggableElements = [...container.querySelectorAll(".box:not(.dragging)")];
-      return draggableElements.reduce(
-        (closet, curr) => {
-          const box = curr.getBoundingClientRect();
-          const offset = y - box.top - box.height / 2;
-          if (offset < 0 && offset > closet.offset) {
-            return { offset, element: curr };
-          } else {
-            return closet;
+        function mouseover(e) {
+          e.stopPropagation();
+          if (e.relatedTarget) {
+            console.log("target: ", e.target);
+            console.log("related: ", e.relatedTarget);
           }
-        },
-        { offset: Number.NEGATIVE_INFINITY, element: null }
-      ).element;
-    }
+        }
+
+        function mouseup(e) {
+          /* clean these codes */
+          child.style = "";
+          child.classList.remove("touched");
+          container.removeChild(placeholderDiv);
+          /* clean these codes */
+          document.removeEventListener("mousemove", mousemove);
+          document.removeEventListener("mouseover", mouseover);
+          document.removeEventListener("mouseup", mouseup);
+        }
+      });
+      child.addEventListener("dragstart", function (e) {
+        return false;
+      });
+    });
   }
 
   bootstrap() {
     const childrens = this.getChildrens();
-    const draggableEl = this.makeChildrenDraggable(childrens);
-    this.onChildrenDragging(draggableEl);
-
-    const container = this.getContainer();
-    this.onContainerDragging(container);
+    this.attachChildrenEvent(childrens);
   }
 }
 
