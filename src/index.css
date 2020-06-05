@@ -16,17 +16,19 @@ body {
 }
 
 .box {
-  border-radius: 2px;
   border: 2px solid #a5dff8;
-  background: #a5dff8;
-  box-shadow: none;
-  box-sizing: border-box;
-  padding: 8px;
+  background-color: #a5dff8;
+  color: #101928;
+  
   width: 250px;
   min-height: 40px;
+  padding: 8px;
+  border-radius: 2px;
+
   margin-bottom: 8px;
+  box-shadow: none;
+  box-sizing: border-box;
   user-select: none;
-  color: #101928;
   display: flex;
   cursor: grab;
   transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
@@ -34,29 +36,6 @@ body {
 }
 
 .box:active {
+  transform: scale(1.05);
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
 }
-
-/* clean these codes */
-.placeholder {
-  border-radius: 2px;
-  border: 2px solid #a5dff8;
-  background: #fff;
-  box-shadow: none;
-  box-sizing: border-box;
-  padding: 8px;
-  min-height: 40px;
-  margin-bottom: 8px;
-  user-select: none;
-  color: #101928;
-  display: flex;
-  opacity: 0.5;
-}
-
-.touched {
-  cursor: grabbing;
-  background-color: rgb(167, 31, 31);
-  border-color: rgb(167, 31, 31);
-  color: #fff;
-}
-/* clean these codes */
