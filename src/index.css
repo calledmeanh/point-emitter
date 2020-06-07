@@ -2,40 +2,47 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .container {
   background-color: rgb(238, 240, 245);
   display: flex;
   flex-direction: column;
   opacity: inherit;
-  padding: 16px 16px 0px;
   border: 8px none;
   transition: background-color 0.2s ease 0s, opacity 0.1s ease 0s;
   user-select: none;
-  width: 250px;
+  position: relative;
+  width: calc(100vw / 1.1);
+  height: calc(100vh / 1.1);
 }
 
 .box {
-  border: 2px solid #a5dff8;
   background-color: #a5dff8;
   color: #101928;
-  
+
   width: 250px;
   min-height: 40px;
   padding: 8px;
   border-radius: 2px;
 
-  margin-bottom: 8px;
   box-shadow: none;
   box-sizing: border-box;
   user-select: none;
   display: flex;
   cursor: grab;
-  transition: all 0.3s cubic-bezier(0, 0, 0.2, 1);
+  position: absolute;
+  transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
 
 .box:active {
-  transform: scale(1.05);
   box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2), 0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
+}
+
+.dragging {
+  cursor: grabbing;
+  z-index: 1000;
 }
