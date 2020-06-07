@@ -8,7 +8,8 @@
     "start": "webpack-dev-server",
     "push:master": "git push origin master",
     "push:issue": "",
-    "push:feature": ""
+    "push:feature": "",
+    "show:git-logs": "git log --pretty=oneline"
   },
   "devDependencies": {
     "@babel/core": "^7.10.1",
