@@ -260,10 +260,4 @@ const DragWithStyle = function (styles = {}) {
   };
 };
 
-/* xử lý trùng lặp code - DRY principle */
-new DragWithStyle({
-  dragEl: {
-    backgroundColor: "red",
-    color: "#fff",
-  },
-}).apply();
+new DragWithStyle().apply();
