@@ -5,6 +5,7 @@ const DragWithStyle = function (styles = {}) {
   const dragWithStyleEl = document.querySelector(TXTS.DRAG_WITH_STYLE_DATA_ATTR);
   if (!dragWithStyleEl) throw new Error(ERROR.CONTAINER);
   this.originStyle = null; // store origin style for dragging element
+
   return {
     /**
      * return true if this is an object
@@ -32,7 +33,7 @@ const DragWithStyle = function (styles = {}) {
      * loop through an object and return the key and value in the callback function
      * @param {*} obj given obj
      * @param {*} cb return key and value of that obj
-     * @param {*} options optional `{empty}` true mean ignore empty value and otherwise
+     * @param {*} options optional `{empty}` true mean ignore empty value, otherwise not ignore
      */
     _loopingObj: function (obj, cb, options = { empty: false }) {
       for (const key in obj) {
@@ -212,9 +213,49 @@ const DragWithStyle = function (styles = {}) {
       }
     },
     /**
+     * return true if the user want to drag an el by grid
+     * @param {*} moveByGrid obj given by the user
+     */
+    _isMoveByGrid: function (moveByGrid) {
+      if (moveByGrid && moveByGrid.enable) return true;
+      else return false;
+    },
+    /**
+     * calculate new position top or left in grid mode
+     * @param {*} pos postion
+     * @param {*} gridValue px for each move
+     */
+    _calcPosByGrid: function (pos, gridValue) {
+      const newPos = Math.round(parseFloat(pos) / gridValue) * gridValue;
+      return newPos;
+    },
+    /**
+     * return a new position by grid if the user want to move by grid, otherwise return a normal position of the mouse
+     * @param {*} moveByGrid obj given by the user
+     * @param {*} top y coordinate of the mouse
+     * @param {*} left x coordinate of the mouse
+     */
+    _getPosByGrid: function (moveByGrid, top, left) {
+      let topValue = 0,
+        leftValue = 0;
+      const isGrid = this._isMoveByGrid(moveByGrid);
+      if (isGrid) {
+        let gridValue = 0;
+        if (moveByGrid.value) {
+          gridValue = moveByGrid.value;
+        } else gridValue = 40;
+        topValue = this._calcPosByGrid(top, gridValue);
+        leftValue = this._calcPosByGrid(left, gridValue);
+      } else {
+        topValue = top;
+        leftValue = left;
+      }
+      return { topValue, leftValue };
+    },
+    /**
      * bootstrap function
      */
-    apply: function () {
+    apply: function (config = {}) {
       const { dragElStyle } = this._initStyle();
       const childrenByIterable = this._getDragWithStyleChildren();
       const childrenLength = childrenByIterable.length;
@@ -240,8 +281,16 @@ const DragWithStyle = function (styles = {}) {
 
           function mouseMove(e) {
             const { pageX, pageY } = e;
-            child.style.top = pageY - originTop + "px";
-            child.style.left = pageX - originLeft + "px";
+            const top = pageY - originTop;
+            const left = pageX - originLeft;
+
+            // move by grid
+            const { moveByGrid } = config;
+            const { topValue, leftValue } = self._getPosByGrid(moveByGrid, top, left);
+            // move by grid
+
+            child.style.top = topValue + "px";
+            child.style.left = leftValue + "px";
           }
 
           function mouseUp(e) {

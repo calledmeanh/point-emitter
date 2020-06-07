@@ -1,3 +1,6 @@
+:root {
+  --size: 800px;
+}
 body {
   height: 100vh;
   margin: 0;
@@ -15,8 +18,8 @@ body {
   transition: background-color 0.2s ease 0s, opacity 0.1s ease 0s;
   user-select: none;
   position: relative;
-  width: calc(100vw / 1.1);
-  height: calc(100vh / 1.1);
+  width: var(--size);
+  height: var(--size);
 }
 
 .box {
@@ -25,6 +28,8 @@ body {
 
   width: 250px;
   min-height: 40px;
+  height: 100px;
+  max-height: 100px;
   padding: 8px;
   border-radius: 2px;
 
@@ -34,6 +39,7 @@ body {
   display: flex;
   cursor: grab;
   position: absolute;
+  overflow: auto;
   transition: all 0.15s cubic-bezier(0, 0, 0.2, 1);
   box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0 rgba(0, 0, 0, 0.14), 0 1px 5px 0 rgba(0, 0, 0, 0.12);
 }
