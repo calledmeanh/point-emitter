@@ -5,7 +5,7 @@ const DragWithStyle = function (styles = {}) {
   const dragWithStyleEl = document.querySelector(TXTS.DRAG_WITH_STYLE_DATA_ATTR);
   if (!dragWithStyleEl) throw new Error(ERROR.CONTAINER);
   this.originStyle = null; // store origin style for dragging element
-
+  this.collidedObjects = null;
   return {
     /**
      * return true if this is an object
@@ -253,6 +253,48 @@ const DragWithStyle = function (styles = {}) {
       return { topValue, leftValue };
     },
     /**
+     * return a position to calculate its boundaries
+     * @param {HTMLElement} node HTML element
+     * @return {Object} {top, left, right, bottom}
+     */
+    _getBoundsForNode(node) {
+      if (!node.getBoundingClientRect) return node;
+
+      let rect = node.getBoundingClientRect(),
+        left = rect.left + (document.body.scrollLeft || 0),
+        top = rect.top + (document.body.scrollTop || 0);
+
+      return {
+        top: top,
+        left: left,
+        right: (node.offsetHeight || 0) + left,
+        bottom: (node.offsetHeight || 0) + top,
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+      };
+    },
+    _objectsCollide: function (nodeA, nodeB, tolerance = 0) {
+      let { top: aTop, left: aLeft, right: aRight = aLeft, bottom: aBottom = aTop } = this._getBoundsForNode(nodeA);
+      let { top: bTop, left: bLeft, right: bRight = bLeft, bottom: bBottom = bTop } = this._getBoundsForNode(nodeB);
+
+      return !(
+        // 'a' bottom doesn't touch 'b' top
+        (
+          aBottom - tolerance < bTop ||
+          // 'a' top doesn't touch 'b' bottom
+          aTop + tolerance > bBottom ||
+          // 'a' right doesn't touch 'b' left
+          aRight - tolerance < bLeft ||
+          // 'a' left doesn't touch 'b' right
+          aLeft + tolerance > bRight
+        )
+      );
+    },
+    _detectRightClick: function (e) {
+      if (e.which === 3 || e.button === 2) return true;
+      return false;
+    },
+    /**
      * bootstrap function
      */
     apply: function (config = {}) {
@@ -266,11 +308,14 @@ const DragWithStyle = function (styles = {}) {
       let originLeft = 0;
       childrenByIterable.forEach(function (child) {
         child.addEventListener(EVENTS.MOUSEDOWN, function (e) {
+          // right clicks
+          const isRightClick = self._detectRightClick(e);
+          if (isRightClick) return;
           // create placeholder element
           const placeholderEl = self._createPlaceholderElBy(child);
           dragWithStyleEl.appendChild(placeholderEl);
           // add class dragging here to prevent placeholder el has this class
-          child.classList.add("dragging");
+          child.classList.add(TXTS.DRAGGING_CLASS);
           // set style for dragging element if it has
           self._setStyleForDragEl(dragElStyle, child);
           originTop = e.pageY - child.offsetTop;
@@ -286,17 +331,47 @@ const DragWithStyle = function (styles = {}) {
 
             // move by grid
             const { moveByGrid } = config;
-            const { topValue, leftValue } = self._getPosByGrid(moveByGrid, top, left);
+            let { topValue /* , leftValue */ } = self._getPosByGrid(moveByGrid, top, left);
             // move by grid
 
+            /* TODO: clean code -- constant file is not clear */
+            const childBox = self._getBoundsForNode(child);
+            const containerBox = self._getBoundsForNode(dragWithStyleEl);
+            if (topValue + childBox.height >= containerBox.height) {
+              topValue = containerBox.height - childBox.height;
+            } else if (topValue <= 0) {
+              topValue = 0;
+            }
+
+            const elNotDragging = childrenByIterable.filter(function (curr) {
+              return curr !== child;
+            });
+            elNotDragging.forEach(function (curr) {
+              if (self._objectsCollide(child, curr)) {
+                self.collidedObjects = curr;
+                return;
+              }
+            });
+            /* TODO: clean code */
+
             child.style.top = topValue + "px";
-            child.style.left = leftValue + "px";
           }
 
           function mouseUp(e) {
-            child.classList.remove("dragging");
+            child.classList.remove(TXTS.DRAGGING_CLASS);
             self._removePlaceholderEl();
             self._resetStyleForDragEl(child);
+
+            /* TODO: clean code */
+            if (self.collidedObjects) {
+              self.collidedObjects.style.width = "50%";
+              child.style.width = "50%";
+              self.collidedObjects.style.left = "50%";
+            } else {
+              child.style.width = "100%";
+            }
+            /* TODO: clean code */
+
             dragWithStyleEl.removeEventListener(EVENTS.MOUSEMOVE, mouseMove);
             dragWithStyleEl.removeEventListener(EVENTS.MOUSEUP, mouseUp);
           }
@@ -309,4 +384,4 @@ const DragWithStyle = function (styles = {}) {
   };
 };
 
-new DragWithStyle().apply();
+new DragWithStyle().apply({ moveByGrid: { enable: true, value: 20 } });

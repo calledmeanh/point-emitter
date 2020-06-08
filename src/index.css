@@ -1,15 +1,16 @@
 :root {
-  --size: 800px;
+  --size: 200px;
 }
 body {
   height: 100vh;
   margin: 0;
   padding: 0;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
 }
-.container {
+
+.time-group {
   background-color: rgb(238, 240, 245);
   display: flex;
   flex-direction: column;
@@ -19,14 +20,32 @@ body {
   user-select: none;
   position: relative;
   width: var(--size);
-  height: var(--size);
+  height: calc(var(--size) + 600px);
+  position: relative;
+}
+
+.time {
+  height: 100%;
+  font-size: 14px;
+  box-sizing: border-box;
+  border-top: 1px solid #e0e0e0;
+}
+
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin-left: 40px;
+  box-sizing: border-box;
 }
 
 .box {
   background-color: #a5dff8;
   color: #101928;
 
-  width: 250px;
+  width: calc(var(--size) - 40px);
   min-height: 40px;
   height: 100px;
   max-height: 100px;
