@@ -9,7 +9,7 @@ const DragWithStyle = function (styles = {}) {
   return {
     /**
      * return true if this is an object
-     * @param {*} obj obj given by the user
+     * @param {Object()} obj obj given by the user
      */
     _isObject: function (obj) {
       if (typeof obj !== TXTS.OBJECT) return false;
@@ -17,7 +17,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return true if this object is empty
-     * @param {*} obj obj give by the user
+     * @param {Object} obj obj give by the user
      */
     _isEmptyObject: function (obj) {
       if (!this._isObject(obj)) throw new Error(ERROR.OBJECT);
@@ -31,9 +31,9 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * loop through an object and return the key and value in the callback function
-     * @param {*} obj given obj
-     * @param {*} cb return key and value of that obj
-     * @param {*} options optional `{empty}` true mean ignore empty value, otherwise not ignore
+     * @param {Object} obj given obj
+     * @callback return key and value of that obj
+     * @param {{empty: boolean}} options optional `{empty}` true mean ignore empty value, otherwise not ignore
      */
     _loopingObj: function (obj, cb, options = { empty: false }) {
       for (const key in obj) {
@@ -52,7 +52,7 @@ const DragWithStyle = function (styles = {}) {
      * create default style if given style is empty or (styles = {})
      * style.ghostEl, style.dragEl are both empty (styles = {ghostEl: {}, dragEl: {}})
      *
-     * @param {*} styles given styles by user
+     * @param {{ghostEl: Object, dragEl: Object}} styles given styles by user
      */
     _createStyles: function (styles) {
       const ghostElStyle = { ...STYLES.GHOST_EL };
@@ -101,7 +101,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return elements with a `dragWithStyleItem` mark attribute
-     * @param {*} childrens childrens in dragWithStyle container element
+     * @param {HTMLElement[]} childrens childrens in dragWithStyle container element
      */
     _setDragWithStyleAttrForChildrens: function (childrens) {
       const childrenCopy = [...childrens];
@@ -113,8 +113,8 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      *
-     * @param {*} style styles for element
-     * @param {*} el element need to be updated with new style
+     * @param {Object} style styles for element
+     * @param {HTMLElement} el element need to be updated with new style
      */
     _setStyleForEl: function (styles, el) {
       this._loopingObj(styles, function (key) {
@@ -124,7 +124,7 @@ const DragWithStyle = function (styles = {}) {
     /**
      * return an element will be cloned by the given child,
      * while creating an element, this element will have an id to use for deleting later
-     * @param {*} child this child will be clone for ghost element
+     * @param {HTMLElement} child this child will be clone for ghost element
      */
     _createGhostElBy: function (child) {
       const { ghostElStyle } = this._initStyle();
@@ -143,7 +143,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return true if there is some key in `dragElStyle` has data
-     * @param {*} dragElStyle given style by user
+     * @param {Object} dragElStyle given style by user
      */
     _isHasSomeStyleForDragEl: function (dragElStyle) {
       // TODO: cannot use loopingObj here
@@ -156,7 +156,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return the origin style of drag el when dragging to revert it when the user stop dragging
-     * @param {*} dragEl element is being dragged by the user
+     * @param {HTMLElement} dragEl element is being dragged by the user
      */
     _storeOriginStyleForDragEl: function (dragEl) {
       const originStyle = { ...STYLES.DEFAULT };
@@ -173,7 +173,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * revert style for dragging element
-     * @param {*} dragEl element is being dragged by the user
+     * @param {HTMLElement} dragEl element is being dragged by the user
      */
     _resetStyleForDragEl: function (dragEl) {
       const originStyle = this.originStyle;
@@ -183,8 +183,8 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      *
-     * @param {*} dragElStyle given style by user
-     * @param {*} dragEl element need to be updated with `dragElStyle`
+     * @param {Object} dragElStyle given style by user
+     * @param {HTMLElement} dragEl element need to be updated with `dragElStyle`
      */
     _setStyleForDragEl: function (dragElStyle, dragEl) {
       if (this._isHasSomeStyleForDragEl(dragElStyle)) {
@@ -194,7 +194,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return true if the user want to drag an el by grid
-     * @param {*} moveByGrid obj given by the user
+     * @param {Object} moveByGrid obj given by the user
      */
     _isMoveByGrid: function (moveByGrid) {
       if (moveByGrid && moveByGrid.enable) return true;
@@ -202,8 +202,8 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * calculate new position top or left in grid mode
-     * @param {*} pos postion
-     * @param {*} gridValue px for each move
+     * @param {number} pos postion
+     * @param {number} gridValue px for each move
      */
     _calcPosByGrid: function (pos, gridValue) {
       const newPos = Math.round(parseFloat(pos) / gridValue) * gridValue;
@@ -211,9 +211,9 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return a new position by grid if the user want to move by grid, otherwise return a normal position of the mouse
-     * @param {*} moveByGrid obj given by the user
-     * @param {*} top y coordinate of the mouse
-     * @param {*} left x coordinate of the mouse
+     * @param {Object} moveByGrid obj given by the user
+     * @param {number} top y coordinate of the mouse
+     * @param {number} left x coordinate of the mouse
      */
     _getPosByGrid: function (moveByGrid, top, left) {
       let topValue = 0,
@@ -276,6 +276,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * bootstrap function
+     * @param {{moveByGrid: { enable: boolean, value: number }}} config
      */
     apply: function (config = {}) {
       const { dragElStyle } = this._initStyle();
