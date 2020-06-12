@@ -50,26 +50,22 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * create default style if given style is empty or (styles = {})
-     * style.placeholderEl, style.dragEl are both empty (styles = {placeholderEl: {}, dragEl: {}})
+     * style.ghostEl, style.dragEl are both empty (styles = {ghostEl: {}, dragEl: {}})
      *
      * @param {*} styles given styles by user
      */
     _createStyles: function (styles) {
-      const placeholderElStyle = { ...STYLES.PLACEHOLDER_EL };
+      const ghostElStyle = { ...STYLES.GHOST_EL };
       const dragElStyle = { ...STYLES.DEFAULT };
 
       // first solution - June 7, 2020
       // find another solution if I can. But later!
-      let newPlaceholderStyle = styles.placeholderEl;
-      if (newPlaceholderStyle && !this._isEmptyObject(newPlaceholderStyle)) {
-        // for (const style in STYLES.DEFAULT) {
-        //   // sure about the keys so no need to check
-        //   placeholderElStyle[style] = newPlaceholderStyle[style];
-        // }
+      let newGhostStyle = styles.ghostEl;
+      if (newGhostStyle && !this._isEmptyObject(newGhostStyle)) {
         this._loopingObj(
           STYLES.DEFAULT,
           function (key) {
-            placeholderElStyle[key] = newPlaceholderStyle[key];
+            ghostElStyle[key] = newGhostStyle[key];
           },
           { empty: true }
         );
@@ -77,10 +73,6 @@ const DragWithStyle = function (styles = {}) {
 
       let newDragStyle = styles.dragEl;
       if (newDragStyle && !this._isEmptyObject(newDragStyle)) {
-        // for (const style in STYLES.DEFAULT) {
-        //   // sure about the keys so no need to check
-        //   dragElStyle[style] = newDragStyle[style];
-        // }
         this._loopingObj(
           STYLES.DEFAULT,
           function (key) {
@@ -89,14 +81,14 @@ const DragWithStyle = function (styles = {}) {
           { empty: true }
         );
       }
-      return { placeholderElStyle, dragElStyle };
+      return { ghostElStyle, dragElStyle };
     },
     /**
      * init styles
      */
     _initStyle: function () {
-      const { placeholderElStyle, dragElStyle } = this._createStyles(styles);
-      return { placeholderElStyle, dragElStyle };
+      const { ghostElStyle, dragElStyle } = this._createStyles(styles);
+      return { ghostElStyle, dragElStyle };
     },
     /**
      * return childrens in dragWithStyle container element, create a `dragWithStyleItem` mark attribute for elements
@@ -125,11 +117,6 @@ const DragWithStyle = function (styles = {}) {
      * @param {*} el element need to be updated with new style
      */
     _setStyleForEl: function (styles, el) {
-      // for (const style in styles) {
-      //   if (styles.hasOwnProperty(style)) {
-      //     el.style[style] = styles[style];
-      //   }
-      // }
       this._loopingObj(styles, function (key) {
         el.style[key] = styles[key];
       });
@@ -137,22 +124,22 @@ const DragWithStyle = function (styles = {}) {
     /**
      * return an element will be cloned by the given child,
      * while creating an element, this element will have an id to use for deleting later
-     * @param {*} child this child will be clone for placeholder element
+     * @param {*} child this child will be clone for ghost element
      */
-    _createPlaceholderElBy: function (child) {
-      const { placeholderElStyle } = this._initStyle();
-      const placeholderEl = child.cloneNode(true);
-      this._setStyleForEl(placeholderElStyle, placeholderEl);
-      placeholderEl.id = TXTS.DRAG_WTIH_STYLE_PLACEHOLDER_EL;
-      placeholderEl.removeAttribute(TXTS.DRAG_WITH_STYLE_ITEM);
-      return placeholderEl;
+    _createGhostElBy: function (child) {
+      const { ghostElStyle } = this._initStyle();
+      const ghostEl = child.cloneNode(true);
+      this._setStyleForEl(ghostElStyle, ghostEl);
+      ghostEl.id = TXTS.DRAG_WTIH_STYLE_GHOST_EL;
+      ghostEl.removeAttribute(TXTS.DRAG_WITH_STYLE_ITEM);
+      return ghostEl;
     },
     /**
      * remove an element with dragWithStyle id
      */
-    _removePlaceholderEl: function () {
-      const placeholderEl = document.getElementById(TXTS.DRAG_WTIH_STYLE_PLACEHOLDER_EL);
-      placeholderEl.remove();
+    _removeGhostEl: function () {
+      const ghostEl = document.getElementById(TXTS.DRAG_WTIH_STYLE_GHOST_EL);
+      ghostEl.remove();
     },
     /**
      * return true if there is some key in `dragElStyle` has data
@@ -190,13 +177,6 @@ const DragWithStyle = function (styles = {}) {
      */
     _resetStyleForDragEl: function (dragEl) {
       const originStyle = this.originStyle;
-      // for (const key in originStyle) {
-      //   if (originStyle.hasOwnProperty(key)) {
-      //     if (originStyle[key]) {
-      //       dragEl.style[key] = originStyle[key];
-      //     }
-      //   }
-      // }
       this._loopingObj(originStyle, function (key) {
         dragEl.style[key] = originStyle[key];
       });
@@ -311,10 +291,10 @@ const DragWithStyle = function (styles = {}) {
           // right clicks
           const isRightClick = self._detectRightClick(e);
           if (isRightClick) return;
-          // create placeholder element
-          const placeholderEl = self._createPlaceholderElBy(child);
-          dragWithStyleEl.appendChild(placeholderEl);
-          // add class dragging here to prevent placeholder el has this class
+          // create ghost element
+          const ghostEl = self._createGhostElBy(child);
+          dragWithStyleEl.appendChild(ghostEl);
+          // add class dragging here to prevent ghost el has this class
           child.classList.add(TXTS.DRAGGING_CLASS);
           // set style for dragging element if it has
           self._setStyleForDragEl(dragElStyle, child);
@@ -343,15 +323,6 @@ const DragWithStyle = function (styles = {}) {
               topValue = 0;
             }
 
-            const elNotDragging = childrenByIterable.filter(function (curr) {
-              return curr !== child;
-            });
-            elNotDragging.forEach(function (curr) {
-              if (self._objectsCollide(child, curr)) {
-                self.collidedObjects = curr;
-                return;
-              }
-            });
             /* TODO: clean code */
 
             child.style.top = topValue + "px";
@@ -359,18 +330,8 @@ const DragWithStyle = function (styles = {}) {
 
           function mouseUp(e) {
             child.classList.remove(TXTS.DRAGGING_CLASS);
-            self._removePlaceholderEl();
+            self._removeGhostEl();
             self._resetStyleForDragEl(child);
-
-            /* TODO: clean code */
-            if (self.collidedObjects) {
-              self.collidedObjects.style.width = "50%";
-              child.style.width = "50%";
-              self.collidedObjects.style.left = "50%";
-            } else {
-              child.style.width = "100%";
-            }
-            /* TODO: clean code */
 
             dragWithStyleEl.removeEventListener(EVENTS.MOUSEMOVE, mouseMove);
             dragWithStyleEl.removeEventListener(EVENTS.MOUSEUP, mouseUp);
