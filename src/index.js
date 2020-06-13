@@ -194,10 +194,10 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return true if the user want to drag an el by grid
-     * @param {Object} moveByGrid obj given by the user
+     * @param {number} moveByGrid value given by the user
      */
     _isMoveByGrid: function (moveByGrid) {
-      if (moveByGrid && moveByGrid.enable) return true;
+      if (moveByGrid) return true;
       else return false;
     },
     /**
@@ -211,7 +211,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * return a new position by grid if the user want to move by grid, otherwise return a normal position of the mouse
-     * @param {Object} moveByGrid obj given by the user
+     * @param {number} moveByGrid value given by the user
      * @param {number} top y coordinate of the mouse
      * @param {number} left x coordinate of the mouse
      */
@@ -221,9 +221,7 @@ const DragWithStyle = function (styles = {}) {
       const isGrid = this._isMoveByGrid(moveByGrid);
       if (isGrid) {
         let gridValue = 0;
-        if (moveByGrid.value) {
-          gridValue = moveByGrid.value;
-        } else gridValue = 40;
+        gridValue = moveByGrid;
         topValue = this._calcPosByGrid(top, gridValue);
         leftValue = this._calcPosByGrid(left, gridValue);
       } else {
@@ -276,7 +274,7 @@ const DragWithStyle = function (styles = {}) {
     },
     /**
      * bootstrap function
-     * @param {{moveByGrid: { enable: boolean, value: number }}} config
+     * @param {{moveByGrid: number, handle: string }} config
      */
     apply: function (config = {}) {
       const { dragElStyle } = this._initStyle();
@@ -292,6 +290,24 @@ const DragWithStyle = function (styles = {}) {
           // right clicks
           const isRightClick = self._detectRightClick(e);
           if (isRightClick) return;
+
+          // is drag by handle
+          const { handle } = config;
+          if (handle) {
+            const handles = document.getElementsByClassName(handle);
+            if (handles && handles.length) {
+              for (let i = 0; i < handles.length; i++) {
+                const child = handles[i];
+                const firstChild = child.firstElementChild;
+                if (firstChild) {
+                  firstChild.style.pointerEvents = "none";
+                }
+              }
+            }
+            const isMatchClass = e.target.classList.contains(handle);
+            if (!isMatchClass) return;
+          }
+
           // create ghost element
           const ghostEl = self._createGhostElBy(child);
           dragWithStyleEl.appendChild(ghostEl);
@@ -299,6 +315,7 @@ const DragWithStyle = function (styles = {}) {
           child.classList.add(TXTS.DRAGGING_CLASS);
           // set style for dragging element if it has
           self._setStyleForDragEl(dragElStyle, child);
+
           originTop = e.pageY - child.offsetTop;
           originLeft = e.pageX - child.offsetLeft;
 
@@ -315,7 +332,6 @@ const DragWithStyle = function (styles = {}) {
             let { topValue /* , leftValue */ } = self._getPosByGrid(moveByGrid, top, left);
             // move by grid
 
-            /* TODO: clean code -- constant file is not clear */
             const childBox = self._getBoundsForNode(child);
             const containerBox = self._getBoundsForNode(dragWithStyleEl);
             if (topValue + childBox.height >= containerBox.height) {
@@ -323,8 +339,6 @@ const DragWithStyle = function (styles = {}) {
             } else if (topValue <= 0) {
               topValue = 0;
             }
-
-            /* TODO: clean code */
 
             child.style.top = topValue + "px";
           }
@@ -346,4 +360,4 @@ const DragWithStyle = function (styles = {}) {
   };
 };
 
-new DragWithStyle().apply({ moveByGrid: { enable: true, value: 20 } });
+new DragWithStyle().apply({ moveByGrid: 20, handle: "" });
