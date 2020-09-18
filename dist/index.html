@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Drag With Style</title>
+    <style>
+      .box {
+        width: 200px;
+        height: 150px;
+        border-radius: 4px;
+        background-color: lightblue;
+      }
+
+      .box.dragging {
+        cursor: move;
+        filter: drop-shadow(0 4px 25px rgba(66, 78, 87, 0.25));
+      }
+    </style>
+  </head>
+  <body>
+    <div class="box"></div>
+    <script src="./bundle.js"></script>
+  </body>
+</html>
