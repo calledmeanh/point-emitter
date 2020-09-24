@@ -1,15 +1,15 @@
 {
-  "name": "drag-with-style",
-  "version": "0.3.0",
+  "name": "point-emitter",
+  "version": "0.5.0",
   "license": "MIT",
-  "description": "Drag an element with style",
+  "description": "A small library that make your event listener much easier",
   "author": "HoangAnh <calledmeanh@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/calledmeanh/drag-with-style.git"
+    "url": "https://github.com/calledmeanh/point-emitter.git"
   },
   "bugs": {
-    "url": "https://github.com/calledmeanh/drag-with-style/issues"
+    "url": "https://github.com/calledmeanh/point-emitter/issues"
   },
   "scripts": {
     "build:dev": "webpack --mode development",
@@ -18,9 +18,11 @@
     "push:master": "git push origin master",
     "push:issue": "",
     "push:feature": "",
-    "show:git-logs": "git log --pretty=oneline"
+    "show:git-logs": "git log --pretty=oneline",
+    "format:src": "prettier --write ./src/*.ts"
   },
   "devDependencies": {
+    "prettier": "^2.1.2",
     "ts-loader": "^8.0.3",
     "typescript": "^4.0.2",
     "webpack": "^4.44.1",
@@ -28,10 +30,10 @@
     "webpack-dev-server": "^3.11.0"
   },
   "keywords": [
-    "javascript",
-    "library",
-    "draggable",
-    "drag with style",
-    "stylish"
+    "point-emitter",
+    "pointer event",
+    "helper event listener",
+    "drag-and-drop",
+    "drag & drop"
   ]
 }
