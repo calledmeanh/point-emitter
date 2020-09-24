@@ -7,7 +7,7 @@
 # Install
 
 `npm i point-emitter`  
-`yarn add react-select`
+`yarn add point-emitter`
 
 # How to use:
 
