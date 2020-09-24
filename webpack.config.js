@@ -2,12 +2,20 @@ const path = require("path");
 
 module.exports = {
   entry: "./src/index.ts",
-  devtool: "inline-source-map",
+  devtool: "eval-cheap-module-source-map",
   module: {
     rules: [
       {
         test: /\.ts$/,
-        use: "ts-loader",
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              transpileOnly: true,
+            },
+          },
+        ],
+        include: path.resolve(__dirname, "src"),
         exclude: /node_modules/,
       },
     ],
@@ -16,8 +24,14 @@ module.exports = {
     extensions: [".ts", ".js"],
   },
   output: {
-    filename: "bundle.js",
+    filename: "point-emitter.js",
     path: path.resolve(__dirname, "dist"),
+    library: "PointEmitter",
+    libraryTarget: "umd",
+    globalObject: "this",
+  },
+  optimization: {
+    runtimeChunk: true,
   },
   devServer: {
     contentBase: "./dist",
