@@ -1,13 +1,11 @@
 # PointEmitter
-
-> A small library that make your event listener much easier
-
-Inspired by Pub-Sub Pattern, Node EventEmitter
+A small library that make your event listener much easier  
+Inspired by Pub-Sub Pattern, Node EventEmitter  
 
 # Install
 
-npm: `npm i point-emitter`
-yarn: `yarn add react-select`
+```npm i point-emitter```
+```yarn add react-select```
 
 # How to use:
 
