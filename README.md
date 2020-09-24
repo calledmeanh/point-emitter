@@ -6,7 +6,7 @@ Inspired by Pub-Sub Pattern, Node EventEmitter
 
 ### How to use:
 
-```json
+```js
 // query an element
 const your_element = document.querySelect(selector);
 
