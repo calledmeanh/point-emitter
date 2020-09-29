@@ -8,13 +8,20 @@ enum EVENT_TYPE {
   RESET = "RESET",
 }
 
+type PointData = {
+  x: number;
+  y: number;
+};
+
 type EventData = PointData & {
   isTouch: boolean;
 };
 
-type PointData = {
-  x: number;
-  y: number;
+type BoxData = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
 };
 
 type ListenerData = { [key: string]: Function[] };
@@ -25,19 +32,21 @@ class PointEmitter {
 
   private longPressThreshold: number;
 
-  private node: HTMLElement;
+  private node: Element | null;
   private listeners: ListenerData;
   private initialEventData: EventData | null;
+  private origDistanceFromXToNode: number | null;
+  private origDistanceFromYToNode: number | null;
   private selecting: boolean;
-  private selectEventData: PointData;
-  private lastClickData: number | null;
+  private selectEventData: PointData | null; // save currX & currY for SELECTING & SELECT type cause "touchEnd" doesn't have "pageX, pageY"
+  private lastClickData: number | null; // save last click to compare with latest click for DB_CLICK type
 
   private removeInitialEventListener: Function;
   private removeMoveListener: Function;
   private removeEndListener: Function;
   private removeTouchMoveWindowListener: Function;
 
-  constructor(node: HTMLElement, { longPressThreshold = 250 } = {}) {
+  constructor(node: Element | null, { longPressThreshold = 250 } = {}) {
     this.node = node;
     this.listeners = Object.create(null);
     this.selecting = false;
@@ -53,7 +62,10 @@ class PointEmitter {
     this.node = null;
     this.listeners = Object.create(null);
     this.initialEventData = null;
+    this.origDistanceFromXToNode = null;
+    this.origDistanceFromYToNode = null;
     this.selecting = false;
+    this.selectEventData = null;
     this.lastClickData = null;
 
     this.removeInitialEventListener && this.removeInitialEventListener();
@@ -62,7 +74,7 @@ class PointEmitter {
     this.removeTouchMoveWindowListener && this.removeTouchMoveWindowListener();
   };
   /* getter setter */
-  get getNode(): HTMLElement {
+  get getNode(): Element {
     return this.node;
   }
 
@@ -82,6 +94,20 @@ class PointEmitter {
     };
   };
   /* wrapper for add event listener */
+
+  /*  */
+  getBoundingRect = (node: Element): BoxData => {
+    if (!node) return;
+
+    const nodeBox: DOMRect = node.getBoundingClientRect();
+    return {
+      top: nodeBox.top,
+      left: nodeBox.left,
+      width: nodeBox.width,
+      height: nodeBox.height,
+    };
+  };
+  /*  */
 
   /* Listen for mousedown & touchstart. When one is received, disabled the other and setup future event base on type */
   onInitialEventListener = (): void => {
@@ -106,6 +132,9 @@ class PointEmitter {
   /* handling event */
   onHandleEventListener = (e: any) => {
     const { isTouch, x, y } = this.getEventCoords(e);
+    const { top, left } = this.getBoundingRect(this.node);
+    this.origDistanceFromYToNode = y - top;
+    this.origDistanceFromXToNode = x - left;
     this.emit(EVENT_TYPE.BEFORE_SELECT, (this.initialEventData = { isTouch, x, y }));
 
     switch (e.type) {
@@ -162,30 +191,31 @@ class PointEmitter {
 
     const { x: initX, y: initY } = this.initialEventData;
     const { x, y } = this.getEventCoords(e);
-    const old: boolean = this.selecting,
-      w: number = Math.abs(initX - x),
-      h: number = Math.abs(initY - y),
+    const origSelecting: boolean = this.selecting,
+      distanceFromInitXToX: number = Math.abs(initX - x),
+      distanceFromInitYToY: number = Math.abs(initY - y),
       click = this.isClick(x, y);
 
     // Prevent emitting selectStart event until mouse is moved.
     // in Chrome on Windows, mouseMove event may be fired just after mouseDown event.
-    if (this.isClick(x, y) && !old && !(w || h)) return;
+    if (this.isClick(x, y) && !origSelecting && !(distanceFromInitXToX || distanceFromInitYToY)) return;
 
     this.selecting = true;
-    this.selectEventData = { x, y };
 
-    !old && this.emit(EVENT_TYPE.SELECT_START, { x: initX, y: initY });
+    this.selectEventData = { x: x - this.origDistanceFromXToNode, y: y - this.origDistanceFromYToNode };
+
+    !origSelecting && this.emit(EVENT_TYPE.SELECT_START, { x: initX, y: initY });
     !click && this.emit(EVENT_TYPE.SELECTING, this.selectEventData);
 
     e.preventDefault();
   };
 
   onEndListener = (e: any) => {
+    if (!this.initialEventData) return;
+
     this.removeMoveListener && this.removeMoveListener();
     this.removeEndListener && this.removeEndListener();
     this.selecting = false;
-
-    if (!this.initialEventData) return;
 
     const inRoot = this.node.contains(e.target);
 
@@ -250,3 +280,33 @@ class PointEmitter {
   };
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
 }
+
+const box = document.querySelector(".box");
+
+const pe = new PointEmitter(box);
+
+pe.on("BEFORE_SELECT", (point: PointData) => {
+  console.log(point); // {isTouch, x, y}
+});
+pe.on("SELECT_START", (point: PointData) => {
+  box.classList.add("dragging");
+  console.log(point); // {x, y}
+});
+pe.on("SELECTING", (point: PointData) => {
+  (box as HTMLElement).style.top = point.y + "px";
+  (box as HTMLElement).style.left = point.x + "px";
+  console.log(point); // {x, y}
+});
+pe.on("SELECT", (point: PointData) => {
+  box.classList.remove("dragging");
+  console.log(point); // {x, y}
+});
+pe.on("CLICK", (point: PointData) => {
+  console.log(point); // {x, y}
+});
+pe.on("DB_CLICK", (point: PointData) => {
+  console.log(point); // {x, y}
+});
+pe.on("RESET", (point: PointData) => {
+  console.log(point); // {x, y}
+});
