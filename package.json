@@ -36,10 +36,16 @@
     "webpack-dev-server": "^3.11.0"
   },
   "keywords": [
-    "point-emitter",
+    "point emitter",
     "pointer event",
-    "helper event listener",
-    "drag-and-drop",
-    "drag & drop"
+    "event emitter",
+    "pub sub pattern",
+    "drag",
+    "drop",
+    "drag drop",
+    "drag and drop",
+    "dnd",
+    "frontend",
+    "webpack"
   ]
 }
