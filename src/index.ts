@@ -49,6 +49,7 @@ class PointEmitter {
     window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
   private longPressThreshold: number;
+  private gridMovement: number;
 
   private node: Element | null;
   private listeners: ListenerData;
@@ -65,11 +66,12 @@ class PointEmitter {
   private removeKeyListener: Function;
   private removeTouchMoveWindowListener: Function;
 
-  constructor(node: Element | null, { longPressThreshold = 250 } = {}) {
+  constructor(node: Element | null, { longPressThreshold = 250, gridMovement = 0 } = {}) {
     this.node = node;
     this.listeners = Object.create(null);
     this.selecting = false;
     this.longPressThreshold = longPressThreshold;
+    this.gridMovement = gridMovement;
 
     // Fixes an iOS 10 bug where scrolling could not be prevented on the window.
     this.removeTouchMoveWindowListener = this.listener("touchmove", () => {}, window);
@@ -226,9 +228,16 @@ class PointEmitter {
     // in Chrome on Windows, mouseMove event may be fired just after mouseDown event.
     if (this.isClick(x, y) && !origSelecting && !(distanceFromInitXToX || distanceFromInitYToY)) return;
 
-    this.selecting = true;
+    let afterX: number = x - this.origDistanceFromXToNode;
+    let afterY: number = y - this.origDistanceFromYToNode;
 
-    this.selectEventData = { x: x - this.origDistanceFromXToNode, y: y - this.origDistanceFromYToNode };
+    if (this.gridMovement) {
+      afterX = this.calcGridMovement(afterX);
+      afterY = this.calcGridMovement(afterY);
+    }
+
+    this.selectEventData = { x: afterX, y: afterY };
+    this.selecting = true;
 
     !origSelecting && this.emit(EVENT_TYPE.SELECT_START, { x: initX, y: initY });
     !click && this.emit(EVENT_TYPE.SELECTING, this.selectEventData);
@@ -317,6 +326,10 @@ class PointEmitter {
       return { touch: true, dir: DIRECTION.BOTTOM };
     }
     return { touch: false, dir: null };
+  };
+
+  calcGridMovement = (currPosition: number) => {
+    return Math.floor(currPosition / this.gridMovement) * this.gridMovement;
   };
   /* handling event */
 

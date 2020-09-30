@@ -16,7 +16,8 @@
 const your_element = document.querySelect(selector);
 
 const otp = {
-  longPressThreshold: 250, // emit touchstart after 250ms (default)
+  longPressThreshold: number, // emit touchstart after 250ms (default)
+  gridMovement: number, // move element in a grid layout with specific value (default is 0)
 };
 // initialize a PointEmitter instance
 const pe = new PointEmitter(your_element, otp);
