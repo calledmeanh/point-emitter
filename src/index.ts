@@ -350,3 +350,5 @@ class PointEmitter {
   };
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
 }
+
+export default PointEmitter;
