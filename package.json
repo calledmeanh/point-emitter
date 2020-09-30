@@ -1,6 +1,6 @@
 {
   "name": "point-emitter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "dist/point-emitter.js",
   "description": "A small library that make your event listener much easier",
@@ -47,5 +47,8 @@
     "dnd",
     "frontend",
     "webpack"
-  ]
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  }
 }
