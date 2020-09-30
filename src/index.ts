@@ -44,6 +44,7 @@ class PointEmitter {
   private removeInitialEventListener: Function;
   private removeMoveListener: Function;
   private removeEndListener: Function;
+  private removeKeyListener: Function;
   private removeTouchMoveWindowListener: Function;
 
   constructor(node: Element | null, { longPressThreshold = 250 } = {}) {
@@ -71,6 +72,7 @@ class PointEmitter {
     this.removeInitialEventListener && this.removeInitialEventListener();
     this.removeMoveListener && this.removeMoveListener();
     this.removeEndListener && this.removeEndListener();
+    this.removeKeyListener && this.removeKeyListener();
     this.removeTouchMoveWindowListener && this.removeTouchMoveWindowListener();
   };
   /* getter setter */
@@ -135,16 +137,20 @@ class PointEmitter {
     const { top, left } = this.getBoundingRect(this.node);
     this.origDistanceFromYToNode = y - top;
     this.origDistanceFromXToNode = x - left;
-    this.emit(EVENT_TYPE.BEFORE_SELECT, (this.initialEventData = { isTouch, x, y }));
+    this.selectEventData = { x, y };
+    this.initialEventData = { isTouch, x, y };
+    this.emit(EVENT_TYPE.BEFORE_SELECT, this.initialEventData);
 
     switch (e.type) {
       case "touchstart":
         this.removeMoveListener = this.listener("touchmove", this.onMoveListener);
         this.removeEndListener = this.listener("touchend", this.onEndListener);
+        this.removeKeyListener = this.listener("keydown", this.onEndListener, window);
         break;
       case "mousedown":
         this.removeMoveListener = this.listener("mousemove", this.onMoveListener);
         this.removeEndListener = this.listener("mouseup", this.onEndListener);
+        this.removeKeyListener = this.listener("keydown", this.onEndListener, window);
         break;
       default:
         break;
@@ -215,12 +221,17 @@ class PointEmitter {
 
     this.removeMoveListener && this.removeMoveListener();
     this.removeEndListener && this.removeEndListener();
+    this.removeKeyListener && this.removeKeyListener();
     this.selecting = false;
 
     const inRoot = this.node.contains(e.target);
 
     const { x, y } = this.getEventCoords(e);
     const click: boolean = this.isClick(x, y);
+
+    if (e.key) {
+      return this.emit(EVENT_TYPE.RESET, this.selectEventData);
+    }
 
     if (click && inRoot) return this.onClickListener(e);
 
@@ -280,33 +291,3 @@ class PointEmitter {
   };
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
 }
-
-const box = document.querySelector(".box");
-
-const pe = new PointEmitter(box);
-
-pe.on("BEFORE_SELECT", (point: PointData) => {
-  console.log(point); // {isTouch, x, y}
-});
-pe.on("SELECT_START", (point: PointData) => {
-  box.classList.add("dragging");
-  console.log(point); // {x, y}
-});
-pe.on("SELECTING", (point: PointData) => {
-  (box as HTMLElement).style.top = point.y + "px";
-  (box as HTMLElement).style.left = point.x + "px";
-  console.log(point); // {x, y}
-});
-pe.on("SELECT", (point: PointData) => {
-  box.classList.remove("dragging");
-  console.log(point); // {x, y}
-});
-pe.on("CLICK", (point: PointData) => {
-  console.log(point); // {x, y}
-});
-pe.on("DB_CLICK", (point: PointData) => {
-  console.log(point); // {x, y}
-});
-pe.on("RESET", (point: PointData) => {
-  console.log(point); // {x, y}
-});
