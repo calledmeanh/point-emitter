@@ -40,7 +40,9 @@ pe.on("CLICK", (point) => {
 pe.on("DB_CLICK", (point) => {
   console.log(point); // {x, y}
 });
-
+pe.on("TOUCH_EDGES", (point) => {
+  console.log("TOUCH_EDGES", point); // {x, y, dir (top, right, bottom, left)}
+});
 // press any key to reset
 pe.on("RESET", (point) => {
   console.log("reset", point); // {x,y} - last position after dragging

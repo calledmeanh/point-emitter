@@ -5,12 +5,24 @@ enum EVENT_TYPE {
   SELECT = "SELECT",
   CLICK = "CLICK",
   DB_CLICK = "DB_CLICK",
+  TOUCH_EDGES = "TOUCH_EDGES",
   RESET = "RESET",
+}
+
+enum DIRECTION {
+  TOP = "TOP",
+  RIGHT = "RIGHT",
+  BOTTOM = "BOTTOM",
+  LEFT = "LEFT",
 }
 
 type PointData = {
   x: number;
   y: number;
+};
+
+type EdgeData = PointData & {
+  dir: DIRECTION;
 };
 
 type EventData = PointData & {
@@ -29,6 +41,12 @@ type ListenerData = { [key: string]: Function[] };
 class PointEmitter {
   private readonly clickTolerance: number = 5;
   private readonly clickInterval: number = 250;
+
+  private readonly currentWindowWidth: number =
+    window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+
+  private readonly currentWindowHeight: number =
+    window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
   private longPressThreshold: number;
 
@@ -57,6 +75,8 @@ class PointEmitter {
     this.removeTouchMoveWindowListener = this.listener("touchmove", () => {}, window);
 
     this.onInitialEventListener();
+
+    console.log(this.currentWindowWidth, this.currentWindowHeight);
   }
 
   destroy = () => {
@@ -213,6 +233,11 @@ class PointEmitter {
     !origSelecting && this.emit(EVENT_TYPE.SELECT_START, { x: initX, y: initY });
     !click && this.emit(EVENT_TYPE.SELECTING, this.selectEventData);
 
+    const { touch, dir } = this.touchEdges(x, y);
+    if (touch) {
+      return this.emit(EVENT_TYPE.TOUCH_EDGES, { ...this.selectEventData, dir });
+    }
+
     e.preventDefault();
   };
 
@@ -271,6 +296,27 @@ class PointEmitter {
   isClick = (currX: number, currY: number): boolean => {
     const { isTouch, x, y } = this.initialEventData;
     return !isTouch && Math.abs(currX - x) <= this.clickTolerance && Math.abs(currY - y) <= this.clickTolerance;
+  };
+
+  touchEdges = (x: number, y: number): { touch: boolean; dir: string | null } => {
+    const { width, height } = this.getBoundingRect(this.node);
+
+    const afterX: number = x - this.origDistanceFromXToNode;
+    const afterY: number = y - this.origDistanceFromYToNode;
+
+    if (afterX < 0) {
+      return { touch: true, dir: DIRECTION.LEFT };
+    }
+    if (afterX + width > this.currentWindowWidth) {
+      return { touch: true, dir: DIRECTION.RIGHT };
+    }
+    if (afterY < 0) {
+      return { touch: true, dir: DIRECTION.TOP };
+    }
+    if (afterY + height > this.currentWindowHeight) {
+      return { touch: true, dir: DIRECTION.BOTTOM };
+    }
+    return { touch: false, dir: null };
   };
   /* handling event */
 
