@@ -14,8 +14,8 @@
   },
   "homepage": "https://github.com/calledmeanh/point-emitter#readme",
   "scripts": {
-    "build:dev": "webpack --mode development",
-    "build:prod": "webpack --mode production",
+    "build:dev": "rm -rf dist/* && webpack --mode development",
+    "build:prod": "rm -rf dist/* && webpack --mode production",
     "start": "webpack-dev-server",
     "push:master": "git push origin master",
     "push:issue": "",
