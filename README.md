@@ -1,49 +1,64 @@
-# PointEmitter
+# Point Emitter
 
-### 🔥 A small library that make your event listener much easier 🔥
+A small library that help you drag and drop an element much easier, make your code more elegent
 
-> Inspired by Pub-Sub Pattern, Node EventEmitter
+### Live demo
 
-# Install
+Comming soon...
 
-`npm i point-emitter`  
-`yarn add point-emitter`
+### Features include:
 
-# How to use:
+- Simple, easy to use
+- Flexible approach to data, with customisable functions
+
+### Install
+
+```bash
+$ yarn add point-emitter
+```
+
+### How to use:
 
 ```js
 // query an element
 const your_element = document.querySelect(selector);
 
-const otp = {
+const otps = {
   longPressThreshold: number, // emit touchstart after 250ms (default)
   gridMovement: number, // move element in a grid layout with specific value (default is 0)
 };
 // initialize a PointEmitter instance
-const pe = new PointEmitter(your_element, otp);
+const pe = new PointEmitter(your_element, otps);
 
 // listening events
 pe.on("BEFORE_SELECT", (point) => {
   console.log(point); // {isTouch, x, y} - first position
 });
+
 pe.on("SELECT_START", (point) => {
   console.log(point); // {x, y}
 });
+
 pe.on("SELECTING", (point) => {
   console.log(point); // {x, y}
 });
+
 pe.on("SELECT", (point) => {
   console.log(point); // {x, y} - last position after dragging
 });
+
 pe.on("CLICK", (point) => {
   console.log(point); // {x, y}
 });
+
 pe.on("DB_CLICK", (point) => {
   console.log(point); // {x, y}
 });
+
 pe.on("TOUCH_EDGES", (point) => {
   console.log("TOUCH_EDGES", point); // {x, y, dir (top, right, bottom, left)}
 });
+
 // press any key to reset
 pe.on("RESET", (point) => {
   console.log("reset", point); // {x,y} - last position after dragging
