@@ -47,8 +47,5 @@
     "dnd",
     "frontend",
     "webpack"
-  ],
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com/"
-  }
+  ]
 }
