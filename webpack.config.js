@@ -1,6 +1,4 @@
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 module.exports = {
   entry: "./src/index.ts",
@@ -37,10 +35,4 @@ module.exports = {
   /* optimization: {
     runtimeChunk: true,
   }, */
-  plugins: [new CleanWebpackPlugin(), new HtmlWebpackPlugin({ template: "./src/index.html" })],
-  devServer: {
-    contentBase: "./dist",
-    open: true,
-    port: 3000,
-  },
 };
