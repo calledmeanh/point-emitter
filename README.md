@@ -21,7 +21,7 @@ $ yarn add point-emitter
 
 ```js
 // query an element
-const your_element = document.querySelect(selector);
+const your_element = document.querySelector(selector);
 
 const otps = {
   longPressThreshold: number, // emit touchstart after 250ms (default)
