@@ -77,8 +77,6 @@ class PointEmitter {
     this.removeTouchMoveWindowListener = this.listener("touchmove", () => {}, window);
 
     this.onInitialEventListener();
-
-    console.log(this.currentWindowWidth, this.currentWindowHeight);
   }
 
   destroy = () => {
@@ -135,6 +133,8 @@ class PointEmitter {
 
   /* Listen for mousedown & touchstart. When one is received, disabled the other and setup future event base on type */
   onInitialEventListener = (): void => {
+    if (!this.node) return;
+
     const removeTouchStartListener = this.listener("touchstart", (e) => {
       this.removeInitialEventListener();
       this.removeInitialEventListener = this.onAddLongPressListener(this.onHandleEventListener, e);
@@ -350,5 +350,4 @@ class PointEmitter {
   };
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
 }
-
 export default PointEmitter;
