@@ -181,7 +181,7 @@ class PointEmitter {
 
   /* add long press listener if user touch the screen without moving their finger for 250ms */
   onAddLongPressListener = (handleEventListener: Function, e: any) => {
-    let longPressTimer: NodeJS.Timeout | null = null;
+    let longPressTimer: number | null = null;
     let removeTouchMoveListener: Function | null = null;
     let removeToucEndListener: Function | null = null;
 
