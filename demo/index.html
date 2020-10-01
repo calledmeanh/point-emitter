@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Point Emitter</title>
+    <style>
+      .box {
+        position: absolute;
+        width: 250px;
+        height: 150px;
+        background-color: lightblue;
+        border-radius: 4px;
+        text-align: center;
+        line-height: 150px;
+        cursor: grab;
+        user-select: none;
+      }
+      .box.dragging {
+        z-index: 1;
+        cursor: grabbing;
+        filter: drop-shadow(0 4px 25px rgba(66, 78, 87, 0.25));
+      }
+
+      .box-a {
+        top: 0;
+        left: 0;
+      }
+      .box-b {
+        top: 0;
+        left: 270px;
+      }
+      .box-c {
+        top: 0;
+        left: 540px;
+      }
+      .box-d {
+        top: 170px;
+        left: 0;
+      }
+      .box-e {
+        top: 170px;
+        left: 270px;
+      }
+      .box-f {
+        top: 170px;
+        left: 540px;
+      }
+    </style>
+    <script src="../dist/point-emitter.js"></script>
+  </head>
+  <body>
+    <div class="box box-a">box A</div>
+    <div class="box box-b">box B</div>
+    <div class="box box-c">box C</div>
+
+    <div class="box box-d">box D</div>
+    <div class="box box-e">box E</div>
+    <div class="box box-f">box F</div>
+    <script>
+      const boxes = document.querySelectorAll(".box");
+
+      boxes.forEach((box) => {
+        const pe = new PointEmitter(box, { longPressThreshold: 250, gridMovement: 10 });
+
+        pe.on("BEFORE_SELECT", (point) => {
+          console.log("BEFORE_SELECT", point); // {isTouch, x, y}
+        });
+        pe.on("SELECT_START", (point) => {
+          box.classList.add("dragging");
+          console.log("SELECT_START", point); // {x, y}
+        });
+        pe.on("SELECTING", (point) => {
+          box.style.top = point.y + "px";
+          box.style.left = point.x + "px";
+          console.log("SELECTING", point); // {x, y}
+        });
+        pe.on("SELECT", (point) => {
+          box.classList.remove("dragging");
+          console.log("SELECT", point); // {x, y}
+        });
+        pe.on("CLICK", (point) => {
+          console.log("CLICK", point); // {x, y}
+        });
+        pe.on("DB_CLICK", (point) => {
+          console.log("DB_CLICK", point); // {x, y}
+        });
+
+        pe.on("TOUCH_EDGES", (point) => {
+          console.log("TOUCH_EDGES", point); // {x, y, dir}
+        });
+
+        pe.on("RESET", (point) => {
+          console.log("RESET", point);
+          box.classList.remove("dragging");
+        });
+      });
+    </script>
+  </body>
+</html>
