@@ -30,11 +30,13 @@ module.exports = {
     path: path.resolve(__dirname, "dist"),
     library: "PointEmitter",
     libraryTarget: "umd",
+    libraryExport: "default",
     globalObject: "this",
   },
-  optimization: {
+  // create multiple files at run time -- I don't need it
+  /* optimization: {
     runtimeChunk: true,
-  },
+  }, */
   plugins: [new CleanWebpackPlugin(), new HtmlWebpackPlugin({ template: "./src/index.html" })],
   devServer: {
     contentBase: "./dist",
