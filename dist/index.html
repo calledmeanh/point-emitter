@@ -3,7 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Point Emitter</title>
+    <title>
+      Point Emitter | A small library that help you drag and drop an element much easier, make your code more elegent
+    </title>
     <style>
       .box {
         position: absolute;
@@ -80,6 +82,7 @@
           console.log("SELECT", point); // {x, y}
         });
         pe.on("CLICK", (point) => {
+          box.classList.remove("dragging");
           console.log("CLICK", point); // {x, y}
         });
         pe.on("DB_CLICK", (point) => {
