@@ -48,6 +48,12 @@
         top: 170px;
         left: 540px;
       }
+      .mess {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
     </style>
     <script src="point-emitter.js"></script>
   </head>
@@ -59,11 +65,21 @@
     <div class="box box-d">box D</div>
     <div class="box box-e">box E</div>
     <div class="box box-f">box F</div>
+    <div class="mess">Open dev tool to see log data</div>
     <script>
       const boxes = document.querySelectorAll(".box");
-
+      const ghost = {
+        enable: true,
+        style: {
+          background: "#fff",
+          border: "1px solid lightblue",
+          opacity: 0.5,
+          boxShadow: "",
+          color: "",
+        },
+      };
       boxes.forEach((box) => {
-        const pe = new PointEmitter(box, { longPressThreshold: 250, gridMovement: 10 });
+        const pe = new PointEmitter(box, { longPressThreshold: 250, gridMovement: 0, ghost });
 
         pe.on("BEFORE_SELECT", (point) => {
           console.log("BEFORE_SELECT", point); // {isTouch, x, y}
@@ -91,6 +107,10 @@
 
         pe.on("TOUCH_EDGES", (point) => {
           console.log("TOUCH_EDGES", point); // {x, y, dir}
+        });
+
+        pe.on("BEFORE_CREATE_GHOST", (ghost) => {
+          console.log("BEFORE_CREATE_GHOST", ghost); // ghost element
         });
 
         pe.on("RESET", (point) => {

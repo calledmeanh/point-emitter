@@ -6,6 +6,7 @@ enum EVENT_TYPE {
   CLICK = "CLICK",
   DB_CLICK = "DB_CLICK",
   TOUCH_EDGES = "TOUCH_EDGES",
+  BEFORE_CREATE_GHOST = "BEFORE_CREATE_GHOST",
   RESET = "RESET",
 }
 
@@ -38,6 +39,11 @@ type BoxData = {
 
 type ListenerData = { [key: string]: Function[] };
 
+type Ghost = {
+  enable: boolean;
+  style?: CSSStyleDeclaration;
+};
+
 class PointEmitter {
   private readonly clickTolerance: number = 5;
   private readonly clickInterval: number = 250;
@@ -50,6 +56,9 @@ class PointEmitter {
 
   private longPressThreshold: number;
   private gridMovement: number;
+  private ghost: Ghost;
+
+  private bodyEl: HTMLBodyElement;
 
   private node: Element | null;
   private listeners: ListenerData;
@@ -66,13 +75,15 @@ class PointEmitter {
   private removeKeyListener: Function;
   private removeTouchMoveWindowListener: Function;
 
-  constructor(node: Element | null, { longPressThreshold = 250, gridMovement = 0 } = {}) {
+  constructor(node: Element | null, { longPressThreshold = 250, gridMovement = 0, ghost = { enable: false } } = {}) {
     this.node = node;
     this.listeners = Object.create(null);
     this.selecting = false;
     this.longPressThreshold = longPressThreshold;
     this.gridMovement = gridMovement;
+    this.ghost = ghost;
 
+    this.bodyEl = document.querySelector("body");
     // Fixes an iOS 10 bug where scrolling could not be prevented on the window.
     this.removeTouchMoveWindowListener = this.listener("touchmove", () => {}, window);
 
@@ -161,17 +172,19 @@ class PointEmitter {
     this.origDistanceFromXToNode = x - left;
     this.selectEventData = { x, y };
     this.initialEventData = { isTouch, x, y };
+
+    this.onCreateGhostEl(this.node);
     this.emit(EVENT_TYPE.BEFORE_SELECT, this.initialEventData);
 
     switch (e.type) {
       case "touchstart":
-        this.removeMoveListener = this.listener("touchmove", this.onMoveListener);
-        this.removeEndListener = this.listener("touchend", this.onEndListener);
+        this.removeMoveListener = this.listener("touchmove", this.onMoveListener, window);
+        this.removeEndListener = this.listener("touchend", this.onEndListener, window);
         this.removeKeyListener = this.listener("keydown", this.onEndListener, window);
         break;
       case "mousedown":
-        this.removeMoveListener = this.listener("mousemove", this.onMoveListener);
-        this.removeEndListener = this.listener("mouseup", this.onEndListener);
+        this.removeMoveListener = this.listener("mousemove", this.onMoveListener, window);
+        this.removeEndListener = this.listener("mouseup", this.onEndListener, window);
         this.removeKeyListener = this.listener("keydown", this.onEndListener, window);
         break;
       default:
@@ -253,6 +266,8 @@ class PointEmitter {
   onEndListener = (e: any) => {
     if (!this.initialEventData) return;
 
+    this.onDelGhostEl();
+
     this.removeMoveListener && this.removeMoveListener();
     this.removeEndListener && this.removeEndListener();
     this.removeKeyListener && this.removeKeyListener();
@@ -332,6 +347,28 @@ class PointEmitter {
     return Math.floor(currPosition / this.gridMovement) * this.gridMovement;
   };
   /* handling event */
+
+  /* DOM manipulation */
+  onCreateGhostEl = (node: Element) => {
+    // create ghost el
+    if (this.ghost && this.ghost.enable) {
+      const ghost: Node = node.cloneNode(true);
+      (ghost as HTMLElement).id = "pe-ghost";
+      if (this.ghost.style) {
+        for (let s in this.ghost.style) {
+          if (this.ghost.style[s]) {
+            (ghost as HTMLElement).style[s] = this.ghost.style[s];
+          }
+        }
+      }
+      this.emit(EVENT_TYPE.BEFORE_CREATE_GHOST, ghost);
+      this.bodyEl.insertBefore(ghost, node);
+    }
+  };
+
+  onDelGhostEl = () => this.ghost && this.ghost.enable && document.querySelector("#pe-ghost").remove();
+
+  /* DOM manipulation */
 
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
   on = (type: string, handler: Function): { off: Function } => {

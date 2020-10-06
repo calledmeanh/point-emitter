@@ -26,6 +26,19 @@ const your_element = document.querySelector(selector);
 const otps = {
   longPressThreshold: number, // emit touchstart after 250ms (default)
   gridMovement: number, // move element in a grid layout with specific value (default is 0)
+  // set a ghost el behind your_element
+  // create if enable is true and vice versa (default is false if there is no ghost property)
+  // style for modifing, if one of your styles is empty then ignore. Code below is example ;)
+  ghost: {
+    enable: true,
+    style: {
+      background: "#fff",
+      border: "1px solid lightblue",
+      opacity: 0.5,
+      boxShadow: "",
+      color: "",
+    },
+  },
 };
 // initialize a PointEmitter instance
 const pe = new PointEmitter(your_element, otps);
@@ -57,6 +70,23 @@ pe.on("DB_CLICK", (point) => {
 
 pe.on("TOUCH_EDGES", (point) => {
   console.log("TOUCH_EDGES", point); // {x, y, dir (top, right, bottom, left)}
+});
+
+/* 
+  callback function (cbf) for modifiying ghost element,
+  this cbf happens before append to body tag but after apply your style (*), 
+  so if your dont want to set your style above then you can do it here or do sth as you wish.
+  (*): {
+    applying style...
+    cb();
+    appending to body...
+  }
+*/
+pe.on("BEFORE_CREATE_GHOST", (ghost) => {
+  // for example
+  // ghost.classList.add("your_class")
+  // ghost.setAttribute("key", "value") ...
+  console.log("BEFORE_CREATE_GHOST", ghost); // ghost element
 });
 
 // press any key to reset
