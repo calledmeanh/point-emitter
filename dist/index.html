@@ -79,7 +79,11 @@
         },
       };
       boxes.forEach((box) => {
-        const pe = new PointEmitter(box, { longPressThreshold: 250, gridMovement: 0, ghost });
+        const pe = new PointEmitter(box, { longPressThreshold: 250, saveMouseCoords: true, gridMovement: 0, ghost });
+
+        pe.on("BEFORE_CREATE_GHOST", (ghost) => {
+          console.log("BEFORE_CREATE_GHOST", ghost); // ghost element
+        });
 
         pe.on("BEFORE_SELECT", (point) => {
           console.log("BEFORE_SELECT", point); // {isTouch, x, y}
@@ -107,16 +111,15 @@
 
         pe.on("TOUCH_EDGES", (point) => {
           console.log("TOUCH_EDGES", point); // {x, y, dir}
-        });
-
-        pe.on("BEFORE_CREATE_GHOST", (ghost) => {
-          console.log("BEFORE_CREATE_GHOST", ghost); // ghost element
-        });
+        }).off();
 
         pe.on("RESET", (point) => {
           console.log("RESET", point);
           box.classList.remove("dragging");
         });
+
+        // when you have some actions like destroy or something like that, call destroy function
+        pe.destroy();
       });
     </script>
   </body>
