@@ -54,18 +54,19 @@ class PointEmitter {
   private readonly currentWindowHeight: number =
     window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
-  private longPressThreshold: number;
-  private gridMovement: number;
-  private ghost: Ghost;
+  private longPressThreshold: number | null;
+  private gridMovement: number | null;
+  private saveMouseCoords: boolean | null;
+  private ghost: Ghost | null;
 
-  private bodyEl: HTMLBodyElement;
+  private bodyEl: HTMLBodyElement | null;
 
   private node: Element | null;
   private listeners: ListenerData;
   private initialEventData: EventData | null;
   private origDistanceFromXToNode: number | null;
   private origDistanceFromYToNode: number | null;
-  private selecting: boolean;
+  private selecting: boolean | null;
   private selectEventData: PointData | null; // save currX & currY for SELECTING & SELECT type cause "touchEnd" doesn't have "pageX, pageY"
   private lastClickData: number | null; // save last click to compare with latest click for DB_CLICK type
 
@@ -75,15 +76,21 @@ class PointEmitter {
   private removeKeyListener: Function;
   private removeTouchMoveWindowListener: Function;
 
-  constructor(node: Element | null, { longPressThreshold = 250, gridMovement = 0, ghost = { enable: false } } = {}) {
-    this.node = node;
-    this.listeners = Object.create(null);
-    this.selecting = false;
+  constructor(
+    node: Element | null,
+    { longPressThreshold = 250, gridMovement = 0, saveMouseCoords = false, ghost = { enable: false } } = {}
+  ) {
     this.longPressThreshold = longPressThreshold;
     this.gridMovement = gridMovement;
+    this.saveMouseCoords = saveMouseCoords;
     this.ghost = ghost;
 
     this.bodyEl = document.querySelector("body");
+
+    this.node = node;
+    this.listeners = Object.create(null);
+    this.selecting = false;
+
     // Fixes an iOS 10 bug where scrolling could not be prevented on the window.
     this.removeTouchMoveWindowListener = this.listener("touchmove", () => {}, window);
 
@@ -91,12 +98,19 @@ class PointEmitter {
   }
 
   destroy = () => {
+    this.longPressThreshold = null;
+    this.gridMovement = null;
+    this.saveMouseCoords = null;
+    this.ghost = null;
+
+    this.bodyEl = null;
+
     this.node = null;
     this.listeners = Object.create(null);
     this.initialEventData = null;
     this.origDistanceFromXToNode = null;
     this.origDistanceFromYToNode = null;
-    this.selecting = false;
+    this.selecting = null;
     this.selectEventData = null;
     this.lastClickData = null;
 
@@ -117,25 +131,25 @@ class PointEmitter {
   /* getter setter */
 
   /* wrapper for add event listener */
-  listener = (type: string, handler: EventListenerOrEventListenerObject, target?: any) => {
+  private listener = (type: string, handler: EventListenerOrEventListenerObject, target?: any) => {
     target && target.addEventListener(type, handler, { passive: false });
-    !target && this.node.addEventListener(type, handler, { passive: false });
+    !target && this.node && this.node.addEventListener(type, handler, { passive: false });
 
     return () => {
-      target && target.removeEventListener(type, handler, { passive: false });
-      !target && this.node.removeEventListener(type, handler);
+      target && target.removeEventListener(type, handler);
+      !target && this.node && this.node.removeEventListener(type, handler);
     };
   };
   /* wrapper for add event listener */
 
   /*  */
-  getBoundingRect = (node: Element): BoxData => {
+  private getBoundingRect = (node: Element): BoxData => {
     if (!node) return;
 
     const nodeBox: DOMRect = node.getBoundingClientRect();
     return {
-      top: nodeBox.top,
-      left: nodeBox.left,
+      top: nodeBox.top + window.pageYOffset,
+      left: nodeBox.left + window.pageXOffset,
       width: nodeBox.width,
       height: nodeBox.height,
     };
@@ -143,7 +157,7 @@ class PointEmitter {
   /*  */
 
   /* Listen for mousedown & touchstart. When one is received, disabled the other and setup future event base on type */
-  onInitialEventListener = (): void => {
+  private onInitialEventListener = (): void => {
     if (!this.node) return;
 
     const removeTouchStartListener = this.listener("touchstart", (e) => {
@@ -165,7 +179,9 @@ class PointEmitter {
   /* Listen for mousedown & touchstart. When one is received, disabled the other and setup future event base on type */
 
   /* handling event */
-  onHandleEventListener = (e: any) => {
+  private onHandleEventListener = (e: any) => {
+    if (!this.node) return;
+
     const { isTouch, x, y } = this.getEventCoords(e);
     const { top, left } = this.getBoundingRect(this.node);
     this.origDistanceFromYToNode = y - top;
@@ -193,7 +209,7 @@ class PointEmitter {
   };
 
   /* add long press listener if user touch the screen without moving their finger for 250ms */
-  onAddLongPressListener = (handleEventListener: Function, e: any) => {
+  private onAddLongPressListener = (handleEventListener: Function, e: any) => {
     let longPressTimer: number | null = null;
     let removeTouchMoveListener: Function | null = null;
     let removeToucEndListener: Function | null = null;
@@ -227,7 +243,7 @@ class PointEmitter {
     };
   };
 
-  onMoveListener = (e: any) => {
+  private onMoveListener = (e: any) => {
     if (!this.initialEventData) return;
 
     const { x: initX, y: initY } = this.initialEventData;
@@ -241,8 +257,12 @@ class PointEmitter {
     // in Chrome on Windows, mouseMove event may be fired just after mouseDown event.
     if (this.isClick(x, y) && !origSelecting && !(distanceFromInitXToX || distanceFromInitYToY)) return;
 
-    let afterX: number = x - this.origDistanceFromXToNode;
-    let afterY: number = y - this.origDistanceFromYToNode;
+    let afterX: number = x;
+    let afterY: number = y;
+    if (this.saveMouseCoords) {
+      afterX = x - this.origDistanceFromXToNode;
+      afterY = y - this.origDistanceFromYToNode;
+    }
 
     if (this.gridMovement) {
       afterX = this.calcGridMovement(afterX);
@@ -263,7 +283,7 @@ class PointEmitter {
     e.preventDefault();
   };
 
-  onEndListener = (e: any) => {
+  private onEndListener = (e: any) => {
     if (!this.initialEventData) return;
 
     this.onDelGhostEl();
@@ -287,7 +307,7 @@ class PointEmitter {
     if (!click) return this.emit(EVENT_TYPE.SELECT, this.selectEventData);
   };
 
-  onClickListener = (e: any) => {
+  private onClickListener = (e: any) => {
     const { x, y } = this.getEventCoords(e);
     const now: number = new Date().getTime();
     if (this.lastClickData && now - this.lastClickData <= this.clickInterval) {
@@ -317,16 +337,21 @@ class PointEmitter {
     return coords;
   };
 
-  isClick = (currX: number, currY: number): boolean => {
+  private isClick = (currX: number, currY: number): boolean => {
     const { isTouch, x, y } = this.initialEventData;
     return !isTouch && Math.abs(currX - x) <= this.clickTolerance && Math.abs(currY - y) <= this.clickTolerance;
   };
 
-  touchEdges = (x: number, y: number): { touch: boolean; dir: string | null } => {
+  private touchEdges = (x: number, y: number): { touch: boolean; dir: string | null } => {
     const { width, height } = this.getBoundingRect(this.node);
 
-    const afterX: number = x - this.origDistanceFromXToNode;
-    const afterY: number = y - this.origDistanceFromYToNode;
+    let afterX: number = x;
+    let afterY: number = y;
+
+    if (this.saveMouseCoords) {
+      afterX = x - this.origDistanceFromXToNode;
+      afterY = y - this.origDistanceFromYToNode;
+    }
 
     if (afterX < 0) {
       return { touch: true, dir: DIRECTION.LEFT };
@@ -343,13 +368,13 @@ class PointEmitter {
     return { touch: false, dir: null };
   };
 
-  calcGridMovement = (currPosition: number) => {
+  private calcGridMovement = (currPosition: number) => {
     return Math.floor(currPosition / this.gridMovement) * this.gridMovement;
   };
   /* handling event */
 
   /* DOM manipulation */
-  onCreateGhostEl = (node: Element) => {
+  private onCreateGhostEl = (node: Element) => {
     // create ghost el
     if (this.ghost && this.ghost.enable) {
       const ghost: Node = node.cloneNode(true);
@@ -366,8 +391,7 @@ class PointEmitter {
     }
   };
 
-  onDelGhostEl = () => this.ghost && this.ghost.enable && document.querySelector("#pe-ghost").remove();
-
+  private onDelGhostEl = () => this.ghost && this.ghost.enable && document.querySelector("#pe-ghost").remove();
   /* DOM manipulation */
 
   /* Inspire by EventEmiiter, turnsout it's PubSub pattern */
@@ -380,7 +404,7 @@ class PointEmitter {
     };
   };
 
-  emit = (type: string, ...args: any): void => {
+  private emit = (type: string, ...args: any): void => {
     (this.listeners[type] || []).forEach((fn) => {
       fn(...args);
     });
