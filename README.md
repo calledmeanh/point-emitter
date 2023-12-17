@@ -2,10 +2,6 @@
 
 A small library that help you drag and drop an element much easier, make your code more elegent
 
-### Live demo
-
-See [point-emitter.vercel.app](https://point-emitter.vercel.app/) for live demo
-
 ### Features include:
 
 - Simple, easy to use
