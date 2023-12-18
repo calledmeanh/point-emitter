@@ -25,7 +25,7 @@ module.exports = {
   },
   output: {
     filename: "point-emitter.js",
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(__dirname, "docs"),
     library: "PointEmitter",
     libraryTarget: "umd",
     libraryExport: "default",
