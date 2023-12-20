@@ -18,7 +18,8 @@
     "build:prod": "webpack --mode=production",
     "push:master": "git push origin master",
     "show:git-logs": "git log --pretty=oneline",
-    "format:src": "prettier --write ./src/*.ts"
+    "format:src": "prettier --write ./src",
+    "format:all": "prettier --write ."
   },
   "devDependencies": {
     "prettier": "^2.1.2",
