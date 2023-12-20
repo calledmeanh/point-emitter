@@ -48,11 +48,9 @@ class PointEmitter {
   private readonly clickTolerance: number = 5;
   private readonly clickInterval: number = 250;
 
-  private readonly currentWindowWidth: number =
-    window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+  private readonly currentWindowWidth: number = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
 
-  private readonly currentWindowHeight: number =
-    window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+  private readonly currentWindowHeight: number = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
 
   private longPressThreshold: number | null;
   private gridMovement: number | null;
@@ -76,10 +74,7 @@ class PointEmitter {
   private removeKeyListener: Function;
   private removeTouchMoveWindowListener: Function;
 
-  constructor(
-    node: Element | null,
-    { longPressThreshold = 250, gridMovement = 0, saveMouseCoords = false, ghost = { enable: false } } = {}
-  ) {
+  constructor(node: Element | null, { longPressThreshold = 250, gridMovement = 0, saveMouseCoords = false, ghost = { enable: false } } = {}) {
     this.longPressThreshold = longPressThreshold;
     this.gridMovement = gridMovement;
     this.saveMouseCoords = saveMouseCoords;
@@ -331,9 +326,7 @@ class PointEmitter {
     } */
 
     /* try new way =)) */
-    e.touches &&
-      e.touches.length &&
-      ((coords.isTouch = true), (coords.x = e.touches[0].pageX), (coords.y = e.touches[0].pageY));
+    e.touches && e.touches.length && ((coords.isTouch = true), (coords.x = e.touches[0].pageX), (coords.y = e.touches[0].pageY));
     return coords;
   };
 

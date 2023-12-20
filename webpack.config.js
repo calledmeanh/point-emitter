@@ -31,8 +31,4 @@ module.exports = {
     libraryExport: "default",
     globalObject: "this",
   },
-  // create multiple files at run time -- I don't need it
-  /* optimization: {
-    runtimeChunk: true,
-  }, */
 };
